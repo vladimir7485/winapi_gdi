@@ -377,7 +377,7 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				// Создание желтого прямоугольника
 				hBrush = CreateSolidBrush(RGB(204, 255, 0));
 				RECT localRect;
-				SetRect(&localRect, -(xView/2-20), 240, xView/2-20, -240);
+				SetRect(&localRect, -(xView/2-20), yView/2-100, xView/2-20, -(yView/2-100));
 				FillRect(hdc, &localRect, hBrush);
 
 				switch (ItemIndex)
@@ -493,19 +493,28 @@ void SIN(HDC hdc)
 {
 	HPEN hPen = NULL;
 
+	double scale = 40.0;
+
 	// Рисуем оси координат
-	Line(hdc, 0, 220, 0, -220); // ось Y
-	Line(hdc, -100, 0, 780, 0); // ось X
+	Line(hdc, 0, yView/2-120, 0, -(yView/2-120)); // ось Y
+	Line(hdc, -(xView/2-40), 0, xView/2-40, 0); // ось X
 	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
 
-							   // Создание красного пера
+	// Создание красного пера
 	hPen = CreatePen(1, 4, RGB(255, 25, 0));
 	SelectObject(hdc, hPen);
 
 	// Синусоида
 	for (i = 0; i < 450; i++)
 	{
-		y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
+		y = sin((double)i / scale) * (yView / 2 - 120);
+		LineTo(hdc, i, (int)y);
+	}
+	MoveToEx(hdc, 0, 0, NULL);
+	for (i = 0; i > -450; i--)
+	{
+		//y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
+		y = sin((double)i / scale) * (yView / 2 - 120);
 		LineTo(hdc, i, (int)y);
 	}
 
@@ -514,13 +523,18 @@ void SIN(HDC hdc)
 	SelectObject(hdc, hPen);
 
 	// Наносим деления
-	for (i = -100; i < 500; i += 100)
+	MoveToEx(hdc, 0, 0, NULL);
+	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
+	{
+		Line(hdc, -3, i, 3, i);
+		_stprintf(Buf, L"%4.2f", (float)i/(yView / 2 - 120));
+		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+	}
+	for (i = -(xView / 2 - 40)/90*90; i < (xView / 2 - 40)/90*90; i += 90)
 	{
 		Line(hdc, i, 3, i, -3);
-		Line(hdc, -3, i, 3, i);
-		_stprintf(Buf, L"%d", i);
+		_stprintf(Buf, L"%4.2f", (float)i/scale/pi*180);
 		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
-		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
 	}
 
 	DeleteObject(hPen);

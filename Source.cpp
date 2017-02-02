@@ -6,6 +6,7 @@
 #include <math.h>
 #include <objbase.h>
 #include <stdio.h>
+#include <tchar.h>
 
 /******************************************************************
 *                                                                 *
@@ -77,12 +78,15 @@ private:
 
 int i, xView, yView;
 double y;
-char Buf[5];
+TCHAR Buf[5];
 int ItemIndex = 0;
 
 // Процедура рисовании линии
 BOOL Line(HDC hdc, int x1, int y1, int x2, int y2);
-
+void PAR(HWND hdc);
+void GIP(HWND hdc);
+void SIN(HDC hdc);
+void TAN(HWND hdc);
 
 
 
@@ -302,7 +306,6 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	static RECT rect;
 	HDC hdc; // создаем контекст устройства
 	PAINTSTRUCT ps; // создаём экземпляр структуры графического вывода
-	HPEN hPen = NULL; // создаём перо
 	HBRUSH hBrush = NULL;
 	LRESULT result = 0;
 
@@ -355,8 +358,6 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 				if (HIWORD(wParam) == BN_CLICKED)
 				{
-					//InvalidateRect(hwnd, &rect, TRUE);
-					//UpdateWindow(hwnd);
 					RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 				}
 
@@ -366,13 +367,45 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 			case WM_PAINT:
 
-				InvalidateRect(hwnd, &rect, TRUE);
 				hdc = BeginPaint(hwnd, &ps);
 				SetBkMode(hdc, TRANSPARENT);
 				SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
 				SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
 				SetViewportExtEx(hdc, 500, -500, NULL); // определяем область вывода
-				SetViewportOrgEx(hdc, xView / 6, 0.6 * yView, NULL); // начало координат
+				SetViewportOrgEx(hdc, 0.5 * xView, 0.6 * yView, NULL); // начало координат
+
+				// Создание желтого прямоугольника
+				hBrush = CreateSolidBrush(RGB(204, 255, 0));
+				RECT localRect;
+				SetRect(&localRect, -(xView/2-20), 240, xView/2-20, -240);
+				FillRect(hdc, &localRect, hBrush);
+
+				switch (ItemIndex)
+				{
+				case 0:
+					break;
+				case 1:
+					break;
+				case 2:
+					SIN(hdc);
+					break;
+				case 3:
+					break;
+				default:
+					break;
+				}
+
+				DeleteObject(hBrush);
+
+				EndPaint(hwnd, &ps);
+
+				/*InvalidateRect(hwnd, &rect, TRUE);
+				hdc = BeginPaint(hwnd, &ps);
+				SetBkMode(hdc, TRANSPARENT);
+				SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
+				SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
+				SetViewportExtEx(hdc, 500, -500, NULL); // определяем область вывода
+				SetViewportOrgEx(hdc, 0.5 * xView, 0.6 * yView, NULL); // начало координат
 
 				// Создание желтого прямоугольника
 				hBrush = CreateSolidBrush(RGB(204, 255, 0));
@@ -405,17 +438,14 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				{
 					Line(hdc, i, 3, i, -3);
 					Line(hdc, -3, i, 3, i);
-					sprintf_s(Buf, "%d", i);
-					TextOut(hdc, i - 5, -5, (LPCWSTR)Buf, strlen(Buf));
-					TextOut(hdc, -5, i, (LPCWSTR)Buf, strlen(Buf));
+					_stprintf(Buf, L"%d", i);
+					TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+					TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
 				}
 
 
 
-				EndPaint(hwnd, &ps);
-				//ValidateRect(hwnd, NULL); // обновляем экран
-				//RedrawWindow(hwnd, NULL, NULL, NULL);
-				//UpdateWindow(hwnd);
+				EndPaint(hwnd, &ps);*/
 				wasHandled = true;
 				result = 0;
 
@@ -427,7 +457,6 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				break;
 
 			case WM_DESTROY:
-				DeleteObject(hPen);
 				PostQuitMessage(0);
 				wasHandled = true;
 				result = 1;
@@ -448,4 +477,56 @@ BOOL Line(HDC hdc, int x1, int y1, int x2, int y2)
 {
 	MoveToEx(hdc, x1, y1, NULL); // сделать текущими координаты x1, y1
 	return LineTo(hdc, x2, y2); // нарисовать линию
+}
+
+void PAR(HDC hdc)
+{
+
+}
+
+void GIP(HDC hdc)
+{
+
+}
+
+void SIN(HDC hdc)
+{
+	HPEN hPen = NULL;
+
+	// Рисуем оси координат
+	Line(hdc, 0, 220, 0, -220); // ось Y
+	Line(hdc, -100, 0, 780, 0); // ось X
+	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
+
+							   // Создание красного пера
+	hPen = CreatePen(1, 4, RGB(255, 25, 0));
+	SelectObject(hdc, hPen);
+
+	// Синусоида
+	for (i = 0; i < 450; i++)
+	{
+		y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
+		LineTo(hdc, i, (int)y);
+	}
+
+	// Делаем перо снова черным
+	hPen = CreatePen(1, 1, RGB(0, 0, 0));
+	SelectObject(hdc, hPen);
+
+	// Наносим деления
+	for (i = -100; i < 500; i += 100)
+	{
+		Line(hdc, i, 3, i, -3);
+		Line(hdc, -3, i, 3, i);
+		_stprintf(Buf, L"%d", i);
+		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+	}
+
+	DeleteObject(hPen);
+}
+
+void TAN(HDC hdc)
+{
+
 }

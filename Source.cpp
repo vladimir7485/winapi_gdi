@@ -1,123 +1,443 @@
+// Windows Header Files:
 #include <Windows.h>
-#include <stdio.h>
+#include <CommCtrl.h>
+
+// C RunTime Header Files
 #include <math.h>
+#include <objbase.h>
+#include <stdio.h>
+
+/******************************************************************
+*                                                                 *
+*  Macros and definitions                                         *
+*                                                                 *
+******************************************************************/
+template<class Interface>
+inline void
+SafeRelease(Interface **ppInterfaceToRelease)
+{
+	if (*ppInterfaceToRelease != NULL)
+	{
+		(*ppInterfaceToRelease)->Release();
+		(*ppInterfaceToRelease) = NULL;
+	}
+}
+
+#ifndef Assert
+#if defined( DEBUG ) || defined( _DEBUG )
+#define Assert(b) if (!(b)) {OutputDebugStringA("Assert: " #b "\n");}
+#else
+#define Assert(b)
+#endif //DEBUG || _DEBUG
+#endif
+
+
+#ifndef HINST_THISCOMPONENT
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+#define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
+#endif
 
 #define pi 3.14
+#define ScreenX GetSystemMetrics(SM_CXSCREEN)
+#define ScreenY GetSystemMetrics(SM_CYSCREEN)
+#define MAPWIDTH 1024
+#define MAPHEIGHT 768
 
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-// Процедура рисовании линии
-BOOL Line(HDC hdc, int x1, int y1, int x2, int y2);
+/******************************************************************
+*                                                                 *
+*  DemoApp                                                        *
+*                                                                 *
+******************************************************************/
 
-char szProgName[] = "Graphs";
+class DemoApp
+{
+public:
+	DemoApp();
+	~DemoApp();
+
+	HRESULT Initialize();
+
+	void RunMessageLoop();
+
+private:
+	HRESULT CreateResources();
+	void DiscardResources();
+
+	static LRESULT CALLBACK WndProc(
+		HWND hWnd,
+		UINT message,
+		WPARAM wParam,
+		LPARAM lParam
+		);
+
+private:
+	HWND m_hwnd;
+
+};
 
 int i, xView, yView;
 double y;
 char Buf[5];
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow)
+// Процедура рисовании линии
+BOOL Line(HDC hdc, int x1, int y1, int x2, int y2);
+
+
+
+
+/******************************************************************
+*                                                                 *
+*  The application entry point.                                   *
+*                                                                 *
+******************************************************************/
+
+int WINAPI WinMain(
+	HINSTANCE     /* hInstance */,
+	HINSTANCE     /* hPrevInstance */,
+	LPSTR     /* lpCmdLine */,
+	int     /* nCmdShow */
+	)
 {
-	HWND hWnd;
-	MSG lpMsg;
-	WNDCLASS w;
-
-	w.lpszClassName = (LPCWSTR)szProgName;
-	w.hInstance = hInstance;
-	w.lpfnWndProc = WndProc;
-	w.hCursor = LoadCursor(NULL, IDC_ARROW);
-	w.hIcon = 0;
-	w.lpszMenuName = 0;
-	w.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-	w.style = CS_HREDRAW | CS_VREDRAW;
-	w.cbClsExtra = 0;
-	w.cbWndExtra = 0;
-
-	// Если не удается зарегистрировать класс окна - выходим
-	if (!RegisterClass(&w))
-		return 0;
-
-	// Создадим окно в памяти
-	hWnd = CreateWindow((LPCWSTR)szProgName, (LPCWSTR)szProgName, WS_OVERLAPPEDWINDOW, 100, 100, 500, 400, (HWND)NULL, (HMENU)NULL, (HINSTANCE)hInstance, (HINSTANCE)NULL);
-
-	// Выводим окно из памяти на экран
-	ShowWindow(hWnd, nCmdShow);
-	// Обновим содержимое окна
-	UpdateWindow(hWnd);
-
-	// Цикл обработки сообщений
-	while (GetMessage(&lpMsg, NULL, 0, 0)) // Получаем сообщение из очереди
+	// Ignore the return value because we want to run the program even in the
+	// unlikely event that HeapSetInformation fails.
+	HeapSetInformation(NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+	if (SUCCEEDED(CoInitialize(NULL)))
 	{
-		TranslateMessage(&lpMsg); // Преобразует сообщения клавиш в символы
-		DispatchMessage(&lpMsg); // Передает сообщение соответствующей функции окна
-	}
-	return lpMsg.wParam;
-}
-
-// Функция окна
-LRESULT CALLBACK WndProc(HWND hWnd, UINT messg, WPARAM wParam, LPARAM lParam)
-{
-	HDC hdc; // создаем контекст устройства
-	PAINTSTRUCT ps; // создаём экземпляр структуры графического вывода
-	HPEN hPen = NULL; // создаём перо
-	
-	// Цикл обработки сообщений
-	switch (messg)
-	{
-	case WM_SIZE:
-		xView = LOWORD(lParam);
-		yView = HIWORD(lParam);
-		break;
-	case WM_PAINT:
-		hdc = BeginPaint(hWnd, &ps);
-		SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
-		SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
-		SetViewportExtEx(hdc, xView, -yView, NULL); // определяем область вывода
-		SetViewportOrgEx(hdc, xView / 6, yView / 2, NULL); // начало координат
-
-		// Рисуем оси координат
-		Line(hdc, 0, 220, 0, -220); // ось Y
-		Line(hdc, -100, 0, 500, 0); // ось X
-		MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
-
-		// Создание красного пера
-		hPen = CreatePen(1, 4, RGB(255, 25, 0));
-		SelectObject(hdc, hPen);
-
-		// Синусоида
-		for (i = 0; i < 450; i++)
 		{
-			y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
-			LineTo(hdc, i, (int)y);
-		}
+			DemoApp app;
 
-		// Делаем перо снова черным
-		hPen = CreatePen(1, 1, RGB(0, 0, 0));
-		SelectObject(hdc, hPen);
-		
-		// Наносим деления
-		for (i = -100; i < 500; i += 100)
-		{
-			Line(hdc, i, 3, i, -3);
-			Line(hdc, -3, i, 3, i);
-			sprintf_s(Buf, "%d", i);
-			TextOut(hdc, i-5, -5, (LPCWSTR)Buf, strlen(Buf));
-			TextOut(hdc, -5, i, (LPCWSTR)Buf, strlen(Buf));
+			if (SUCCEEDED(app.Initialize()))
+			{
+				app.RunMessageLoop();
+			}
 		}
-
-		ValidateRect(hWnd, NULL); // обновляем экран
-		EndPaint(hWnd, &ps);
-		break;
-	case WM_DESTROY: // сообщение выхода - разрушаем окно
-		DeleteObject(hPen); // не забываем уничтожить перья
-		PostQuitMessage(0); // посылаем сообщение выхода с кодом 0 - нормальное завершение
-		break;
-	default:
-		return DefWindowProc(hWnd, messg, wParam, lParam); // освобождаем очередь сообщений от неопознанных
-		break;
+		CoUninitialize();
 	}
+
 	return 0;
 }
 
-// Функция рисования линии
+/******************************************************************
+*                                                                 *
+*  DemoApp::DemoApp constructor                                   *
+*                                                                 *
+*  Initialize member data.                                         *
+*                                                                 *
+******************************************************************/
+
+DemoApp::DemoApp() :
+	m_hwnd(NULL)
+{
+}
+
+/******************************************************************
+*                                                                 *
+*  Release resources.                                             *
+*                                                                 *
+******************************************************************/
+
+DemoApp::~DemoApp()
+{
+	// TODO: Release app resource here.
+}
+
+/*******************************************************************
+*                                                                  *
+*  Create the application window and the combobox.                 *
+*                                                                  *
+*******************************************************************/
+
+HRESULT DemoApp::Initialize()
+{
+	HRESULT hr;
+
+	// Register the window class.
+	WNDCLASSEX wcex = { sizeof(WNDCLASSEX) };
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = DemoApp::WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = sizeof(LONG_PTR);
+	wcex.hInstance = HINST_THISCOMPONENT;
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);;
+	wcex.lpszMenuName = NULL;
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.lpszClassName = TEXT("DemoApp");
+
+	RegisterClassEx(&wcex);
+
+	// Create the application window.
+	//
+	// Because the CreateWindow function takes its size in pixels, we
+	// obtain the system DPI and use it to scale the window size.
+	int dpiX = 0;
+	int dpiY = 0;
+	HDC hdc = GetDC(NULL);
+	if (hdc)
+	{
+		dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+		dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+		ReleaseDC(NULL, hdc);
+	}
+
+	/*m_hwnd = CreateWindow(
+	TEXT("DemoApp"),
+	TEXT("Simple Combo Box Example"),
+	WS_OVERLAPPEDWINDOW,
+	CW_USEDEFAULT,
+	CW_USEDEFAULT,
+	static_cast<UINT>(ceil(640.f * dpiX / 96.f)),
+	static_cast<UINT>(ceil(480.f * dpiY / 96.f)),
+	NULL,
+	NULL,
+	HINST_THISCOMPONENT,
+	this
+	);*/
+	int sx = ScreenX;
+	int sy = ScreenY;
+	m_hwnd = CreateWindow(
+		TEXT("DemoApp"),
+		TEXT("Simple Combo Box Example"),
+		WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME,
+		(ScreenX - MAPWIDTH) / 2,
+		(ScreenY - MAPHEIGHT) / 2,
+		MAPWIDTH,
+		MAPHEIGHT,
+		(HWND)NULL,
+		(HMENU)NULL,
+		(HINSTANCE)HINST_THISCOMPONENT,
+		this);
+
+	hr = m_hwnd ? S_OK : E_FAIL;
+	if (SUCCEEDED(hr))
+	{
+		ShowWindow(m_hwnd, SW_SHOWNORMAL);
+		UpdateWindow(m_hwnd);
+	}
+
+
+	// Create the Combobox
+	//
+	// Uses the CreateWindow function to create a child window of 
+	// the application window. The WC_COMBOBOX window style specifies  
+	// that it is a combobox.
+
+	int xposCombo = 5 * MAPWIDTH / 8;            // Horizontal position of the window.
+	int yposCombo = 1 * MAPHEIGHT / 8;            // Vertical position of the window.
+	int nwidthCombo = 200;          // Width of the window
+	int nheightCombo = 200;         // Height of the window
+	HWND hwndParent = m_hwnd; // Handle to the parent window
+
+	HWND hWndComboBox = CreateWindow(WC_COMBOBOX, TEXT(""),
+		CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
+		xposCombo, yposCombo, nwidthCombo, nheightCombo, hwndParent, NULL, HINST_THISCOMPONENT,
+		NULL);
+
+
+
+	// load the combobox with item list.  
+	// Send a CB_ADDSTRING message to load each item
+
+	TCHAR Planets[9][10] =
+	{
+		TEXT("Mercury"), TEXT("Venus"), TEXT("Terra"), TEXT("Mars"),
+		TEXT("Jupiter"), TEXT("Saturn"), TEXT("Uranus"), TEXT("Neptune"),
+		TEXT("Pluto??")
+	};
+
+	TCHAR A[16];
+	int  k = 0;
+
+	memset(&A, 0, sizeof(A));
+	for (k = 0; k <= 8; k += 1)
+	{
+		wcscpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)Planets[k]);
+
+		// Add string to combobox.
+		SendMessage(hWndComboBox, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)A);
+	}
+
+	// Send the CB_SETCURSEL message to display an initial item 
+	//  in the selection field  
+	SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)2, (LPARAM)0);
+
+	// Create Button
+	int xposButton = xposCombo + 200;            // Horizontal position of the window.
+	int yposButton = 1 * MAPHEIGHT / 8;            // Vertical position of the window.
+	int nwidthButton = 200;          // Width of the window
+	int nheightButton = 22;         // Height of the window
+	HWND hWndButton = CreateWindow(WC_BUTTON, TEXT("Plot"),
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+		xposButton, yposButton, nwidthButton, nheightButton, hwndParent, NULL, HINST_THISCOMPONENT,
+		NULL);
+
+	return hr;
+}
+
+
+/******************************************************************
+*                                                                 *
+*  The main window's message loop.                                *
+*                                                                 *
+******************************************************************/
+
+void DemoApp::RunMessageLoop()
+{
+	MSG msg;
+
+	while (GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+}
+
+
+/******************************************************************
+*                                                                 *
+*  The window's message handler.                                  *
+*                                                                 *
+******************************************************************/
+
+LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	static RECT rect;
+	HDC hdc; // создаем контекст устройства
+	PAINTSTRUCT ps; // создаём экземпляр структуры графического вывода
+	HPEN hPen = NULL; // создаём перо
+	HBRUSH hBrush = NULL;
+	LRESULT result = 0;
+
+	if (message == WM_CREATE)
+	{
+		LPCREATESTRUCT pcs = (LPCREATESTRUCT)lParam;
+		DemoApp *pDemoApp = (DemoApp *)pcs->lpCreateParams;
+
+		::SetWindowLongPtrW(
+			hwnd,
+			GWLP_USERDATA,
+			PtrToUlong(pDemoApp)
+			);
+
+		result = 1;
+	}
+	else
+	{
+		DemoApp *pDemoApp = reinterpret_cast<DemoApp *>(static_cast<LONG_PTR>(
+			::GetWindowLongPtrW(
+				hwnd,
+				GWLP_USERDATA
+				)));
+
+		bool wasHandled = false;
+
+		if (pDemoApp)
+		{
+			switch (message)
+			{
+			case WM_SIZE:
+				xView = LOWORD(lParam);
+				yView = HIWORD(lParam);
+				break;
+			case WM_COMMAND:
+
+				if (HIWORD(wParam) == CBN_SELCHANGE)
+					// If the user makes a selection from the list:
+					//   Send CB_GETCURSEL message to get the index of the selected list item.
+					//   Send CB_GETLBTEXT message to get the item.
+					//   Display the item in a messagebox.
+				{
+					int ItemIndex = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
+						(WPARAM)0, (LPARAM)0);
+					TCHAR  ListItem[256];
+					(TCHAR)SendMessage((HWND)lParam, (UINT)CB_GETLBTEXT,
+						(WPARAM)ItemIndex, (LPARAM)ListItem);
+					MessageBox(hwnd, (LPCWSTR)ListItem, TEXT("Item Selected"), MB_OK);
+				}
+
+				wasHandled = true;
+				result = 0;
+				break;
+
+			case WM_PAINT:
+
+				InvalidateRect(hwnd, &rect, TRUE);
+				hdc = BeginPaint(hwnd, &ps);
+				SetBkMode(hdc, TRANSPARENT);
+				SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
+				SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
+				SetViewportExtEx(hdc, 500, -500, NULL); // определяем область вывода
+				SetViewportOrgEx(hdc, xView / 6, 0.6 * yView, NULL); // начало координат
+
+				// Создание желтого прямоугольника
+				hBrush = CreateSolidBrush(RGB(204, 255, 0));
+				RECT rect;
+				SetRect(&rect, -120, 240, 800, -240);
+				FillRect(hdc, &rect, hBrush);
+
+				// Рисуем оси координат
+				Line(hdc, 0, 220, 0, -220); // ось Y
+				Line(hdc, -100, 0, 780, 0); // ось X
+				MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
+
+				// Создание красного пера
+				hPen = CreatePen(1, 4, RGB(255, 25, 0));
+				SelectObject(hdc, hPen);
+
+				// Синусоида
+				for (i = 0; i < 450; i++)
+				{
+					y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
+					LineTo(hdc, i, (int)y);
+				}
+
+				// Делаем перо снова черным
+				hPen = CreatePen(1, 1, RGB(0, 0, 0));
+				SelectObject(hdc, hPen);
+
+				// Наносим деления
+				for (i = -100; i < 500; i += 100)
+				{
+					Line(hdc, i, 3, i, -3);
+					Line(hdc, -3, i, 3, i);
+					sprintf_s(Buf, "%d", i);
+					TextOut(hdc, i - 5, -5, (LPCWSTR)Buf, strlen(Buf));
+					TextOut(hdc, -5, i, (LPCWSTR)Buf, strlen(Buf));
+				}
+
+
+
+				EndPaint(hwnd, &ps);
+				//ValidateRect(hwnd, NULL); // обновляем экран
+				//RedrawWindow(hwnd, NULL, NULL, NULL);
+				//UpdateWindow(hwnd);
+				wasHandled = true;
+				result = 0;
+
+				break;
+			case WM_DISPLAYCHANGE:
+				InvalidateRect(hwnd, NULL, FALSE);
+				wasHandled = true;
+				result = 0;
+				break;
+
+			case WM_DESTROY:
+				DeleteObject(hPen);
+				PostQuitMessage(0);
+				wasHandled = true;
+				result = 1;
+				break;
+			}
+		}
+
+		if (!wasHandled)
+		{
+			result = DefWindowProc(hwnd, message, wParam, lParam);
+		}
+	}
+
+	return result;
+}
+
 BOOL Line(HDC hdc, int x1, int y1, int x2, int y2)
 {
 	MoveToEx(hdc, x1, y1, NULL); // сделать текущими координаты x1, y1

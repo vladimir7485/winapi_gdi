@@ -78,6 +78,7 @@ private:
 int i, xView, yView;
 double y;
 char Buf[5];
+int ItemIndex = 0;
 
 // Процедура рисовании линии
 BOOL Line(HDC hdc, int x1, int y1, int x2, int y2);
@@ -239,9 +240,7 @@ HRESULT DemoApp::Initialize()
 
 	TCHAR Planets[9][10] =
 	{
-		TEXT("Mercury"), TEXT("Venus"), TEXT("Terra"), TEXT("Mars"),
-		TEXT("Jupiter"), TEXT("Saturn"), TEXT("Uranus"), TEXT("Neptune"),
-		TEXT("Pluto??")
+		TEXT("Парабола"), TEXT("Гипербола"), TEXT("Синус"), TEXT("Тангенс")
 	};
 
 	TCHAR A[16];
@@ -258,7 +257,7 @@ HRESULT DemoApp::Initialize()
 
 	// Send the CB_SETCURSEL message to display an initial item 
 	//  in the selection field  
-	SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)2, (LPARAM)0);
+	//SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
 
 	// Create Button
 	int xposButton = xposCombo + 200;            // Horizontal position of the window.
@@ -346,12 +345,19 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 					//   Send CB_GETLBTEXT message to get the item.
 					//   Display the item in a messagebox.
 				{
-					int ItemIndex = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
+					ItemIndex = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
 						(WPARAM)0, (LPARAM)0);
 					TCHAR  ListItem[256];
 					(TCHAR)SendMessage((HWND)lParam, (UINT)CB_GETLBTEXT,
 						(WPARAM)ItemIndex, (LPARAM)ListItem);
-					MessageBox(hwnd, (LPCWSTR)ListItem, TEXT("Item Selected"), MB_OK);
+					//MessageBox(hwnd, (LPCWSTR)ListItem, TEXT("Item Selected"), MB_OK);
+				}
+
+				if (HIWORD(wParam) == BN_CLICKED)
+				{
+					//InvalidateRect(hwnd, &rect, TRUE);
+					//UpdateWindow(hwnd);
+					RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE);
 				}
 
 				wasHandled = true;

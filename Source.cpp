@@ -83,10 +83,10 @@ int ItemIndex = 0;
 
 // Процедура рисовании линии
 BOOL Line(HDC hdc, int x1, int y1, int x2, int y2);
-void PAR(HWND hdc);
-void GIP(HWND hdc);
+void PAR(HDC hdc);
+void GIP(HDC hdc);
 void SIN(HDC hdc);
-void TAN(HWND hdc);
+void TAN(HDC hdc);
 
 
 
@@ -261,7 +261,7 @@ HRESULT DemoApp::Initialize()
 
 	// Send the CB_SETCURSEL message to display an initial item 
 	//  in the selection field  
-	//SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
+	SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
 
 	// Create Button
 	int xposButton = xposCombo + 200;            // Horizontal position of the window.
@@ -383,6 +383,7 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				switch (ItemIndex)
 				{
 				case 0:
+					PAR(hdc);
 					break;
 				case 1:
 					break;
@@ -481,7 +482,62 @@ BOOL Line(HDC hdc, int x1, int y1, int x2, int y2)
 
 void PAR(HDC hdc)
 {
+	HPEN hPen = NULL;
 
+	double scale = 10.0;
+	POINT pt;
+	GetViewportOrgEx(hdc, &pt);
+	SetViewportOrgEx(hdc, 0.5 * xView, 0.9 * yView, NULL);
+	MoveToEx(hdc, 0, 0, NULL);
+
+	// Рисуем оси координат
+	Line(hdc, 0, (yView / 2 - 120) * 2 - 20, 0, -20); // ось Y
+	Line(hdc, -(xView / 2 - 40), 0, xView / 2 - 40, 0); // ось X
+	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
+
+							   // Создание красного пера
+	hPen = CreatePen(1, 4, RGB(255, 25, 0));
+	SelectObject(hdc, hPen);
+
+	// Парабола
+	for (i = 0; i < xView / 2 - 40; i++)
+	{
+		y = pow((double)i / scale, 2.0);
+		if (y < (yView / 2 - 120) * 2 - 20)
+			LineTo(hdc, i, (int)y);
+	}
+	MoveToEx(hdc, 0, 0, NULL);
+	for (i = 0; i > -(xView / 2 - 40); i--)
+	{
+		y = pow((double)i / scale, 2.0);
+		if (y < (yView / 2 - 120) * 2 - 20)
+			LineTo(hdc, i, (int)y);
+	}
+
+	// Делаем перо снова черным
+	hPen = CreatePen(1, 1, RGB(0, 0, 0));
+	SelectObject(hdc, hPen);
+
+	// Наносим деления
+	MoveToEx(hdc, 0, 0, NULL);
+	// по Y
+	for (i = (yView / 2 - 120)*2 - 30; i > -10; i -= 50)
+	{
+		Line(hdc, -3, i, 3, i);
+		_stprintf(Buf, L"%4.2f", (float)i);
+		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+	}
+	// по X
+	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
+	{
+		Line(hdc, i, 3, i, -3);
+		_stprintf(Buf, L"%4.2f", (float)i / scale);
+		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+	}
+
+	DeleteObject(hPen);
+
+	SetViewportOrgEx(hdc, pt.x, pt.y, NULL);
 }
 
 void GIP(HDC hdc)
@@ -505,13 +561,13 @@ void SIN(HDC hdc)
 	SelectObject(hdc, hPen);
 
 	// Синусоида
-	for (i = 0; i < 450; i++)
+	for (i = 0; i < xView/2-40; i++)
 	{
 		y = sin((double)i / scale) * (yView / 2 - 120);
 		LineTo(hdc, i, (int)y);
 	}
 	MoveToEx(hdc, 0, 0, NULL);
-	for (i = 0; i > -450; i--)
+	for (i = 0; i > -(xView/2-40); i--)
 	{
 		//y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
 		y = sin((double)i / scale) * (yView / 2 - 120);

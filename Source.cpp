@@ -166,7 +166,7 @@ HRESULT DemoApp::Initialize()
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);;
 	wcex.lpszMenuName = NULL;
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.lpszClassName = TEXT("DemoApp");
+	wcex.lpszClassName = TEXT("Graphs");
 
 	RegisterClassEx(&wcex);
 
@@ -184,24 +184,11 @@ HRESULT DemoApp::Initialize()
 		ReleaseDC(NULL, hdc);
 	}
 
-	/*m_hwnd = CreateWindow(
-	TEXT("DemoApp"),
-	TEXT("Simple Combo Box Example"),
-	WS_OVERLAPPEDWINDOW,
-	CW_USEDEFAULT,
-	CW_USEDEFAULT,
-	static_cast<UINT>(ceil(640.f * dpiX / 96.f)),
-	static_cast<UINT>(ceil(480.f * dpiY / 96.f)),
-	NULL,
-	NULL,
-	HINST_THISCOMPONENT,
-	this
-	);*/
 	int sx = ScreenX;
 	int sy = ScreenY;
 	m_hwnd = CreateWindow(
-		TEXT("DemoApp"),
-		TEXT("Simple Combo Box Example"),
+		TEXT("Graphs"),
+		TEXT("Графики"),
 		WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME,
 		(ScreenX - MAPWIDTH) / 2,
 		(ScreenY - MAPHEIGHT) / 2,
@@ -226,8 +213,8 @@ HRESULT DemoApp::Initialize()
 	// the application window. The WC_COMBOBOX window style specifies  
 	// that it is a combobox.
 
-	int xposCombo = 5 * MAPWIDTH / 8;            // Horizontal position of the window.
-	int yposCombo = 1 * MAPHEIGHT / 8;            // Vertical position of the window.
+	int xposCombo = 18.0 * MAPWIDTH / 32;            // Horizontal position of the window.
+	int yposCombo = 1.0 * MAPHEIGHT / 32;            // Vertical position of the window.
 	int nwidthCombo = 200;          // Width of the window
 	int nheightCombo = 200;         // Height of the window
 	HWND hwndParent = m_hwnd; // Handle to the parent window
@@ -242,12 +229,12 @@ HRESULT DemoApp::Initialize()
 	// load the combobox with item list.  
 	// Send a CB_ADDSTRING message to load each item
 
-	TCHAR Planets[9][10] =
+	TCHAR Planets[9][20] =
 	{
-		TEXT("Парабола"), TEXT("Гипербола"), TEXT("Синус"), TEXT("Тангенс")
+		TEXT("Парабола"), TEXT("Гипербола (y=k/x)"), TEXT("Синус"), TEXT("Тангенс")
 	};
 
-	TCHAR A[16];
+	TCHAR A[20];
 	int  k = 0;
 
 	memset(&A, 0, sizeof(A));
@@ -264,11 +251,11 @@ HRESULT DemoApp::Initialize()
 	SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
 
 	// Create Button
-	int xposButton = xposCombo + 200;            // Horizontal position of the window.
-	int yposButton = 1 * MAPHEIGHT / 8;            // Vertical position of the window.
+	int xposButton = xposCombo + 210;            // Horizontal position of the window.
+	int yposButton = yposCombo;            // Vertical position of the window.
 	int nwidthButton = 200;          // Width of the window
 	int nheightButton = 22;         // Height of the window
-	HWND hWndButton = CreateWindow(WC_BUTTON, TEXT("Plot"),
+	HWND hWndButton = CreateWindow(WC_BUTTON, TEXT("Построить"),
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		xposButton, yposButton, nwidthButton, nheightButton, hwndParent, NULL, HINST_THISCOMPONENT,
 		NULL);
@@ -372,7 +359,7 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
 				SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
 				SetViewportExtEx(hdc, 500, -500, NULL); // определяем область вывода
-				SetViewportOrgEx(hdc, 0.5 * xView, 0.6 * yView, NULL); // начало координат
+				SetViewportOrgEx(hdc, 0.5 * xView, 0.5 * yView, NULL); // начало координат
 
 				// Создание желтого прямоугольника
 				hBrush = CreateSolidBrush(RGB(204, 255, 0));
@@ -489,7 +476,7 @@ void PAR(HDC hdc)
 	double scale = 10.0;
 	POINT pt;
 	GetViewportOrgEx(hdc, &pt);
-	SetViewportOrgEx(hdc, 0.5 * xView, 0.9 * yView, NULL);
+	SetViewportOrgEx(hdc, 0.5 * xView, 0.8 * yView, NULL);
 	MoveToEx(hdc, 0, 0, NULL);
 
 	// Рисуем оси координат
@@ -714,7 +701,7 @@ void TAN(HDC hdc)
 	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
 	{
 		Line(hdc, -3, i, 3, i);
-		_stprintf(Buf, L"%4.2f", (float)i / (yView / 2 - 120));
+		_stprintf(Buf, L"%4.2f", (float)i / scale);
 		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
 	}
 	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)

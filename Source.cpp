@@ -78,7 +78,7 @@ private:
 
 int i, xView, yView;
 double y;
-TCHAR Buf[5];
+TCHAR Buf[10];
 int ItemIndex = 0;
 
 // Процедура рисовании линии
@@ -213,8 +213,8 @@ HRESULT DemoApp::Initialize()
 	// the application window. The WC_COMBOBOX window style specifies  
 	// that it is a combobox.
 
-	int xposCombo = 18.0 * MAPWIDTH / 32;            // Horizontal position of the window.
-	int yposCombo = 1.0 * MAPHEIGHT / 32;            // Vertical position of the window.
+	int xposCombo = (int)(18.0 * MAPWIDTH / 32);            // Horizontal position of the window.
+	int yposCombo = (int)(1.0 * MAPHEIGHT / 32);            // Vertical position of the window.
 	int nwidthCombo = 200;          // Width of the window
 	int nheightCombo = 200;         // Height of the window
 	HWND hwndParent = m_hwnd; // Handle to the parent window
@@ -229,7 +229,7 @@ HRESULT DemoApp::Initialize()
 	// load the combobox with item list.  
 	// Send a CB_ADDSTRING message to load each item
 
-	TCHAR Planets[9][20] =
+	TCHAR charts[4][20] =
 	{
 		TEXT("Парабола"), TEXT("Гипербола (y=k/x)"), TEXT("Синус"), TEXT("Тангенс")
 	};
@@ -238,9 +238,9 @@ HRESULT DemoApp::Initialize()
 	int  k = 0;
 
 	memset(&A, 0, sizeof(A));
-	for (k = 0; k <= 8; k += 1)
+	for (k = 0; k <= 3; k += 1)
 	{
-		wcscpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)Planets[k]);
+		wcscpy_s(A, sizeof(A) / sizeof(TCHAR), (TCHAR*)charts[k]);
 
 		// Add string to combobox.
 		SendMessage(hWndComboBox, (UINT)CB_ADDSTRING, (WPARAM)0, (LPARAM)A);
@@ -335,7 +335,7 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 					//   Send CB_GETLBTEXT message to get the item.
 					//   Display the item in a messagebox.
 				{
-					ItemIndex = SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
+					ItemIndex = (int)SendMessage((HWND)lParam, (UINT)CB_GETCURSEL,
 						(WPARAM)0, (LPARAM)0);
 					TCHAR  ListItem[256];
 					(TCHAR)SendMessage((HWND)lParam, (UINT)CB_GETLBTEXT,
@@ -359,7 +359,7 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
 				SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
 				SetViewportExtEx(hdc, 500, -500, NULL); // определяем область вывода
-				SetViewportOrgEx(hdc, 0.5 * xView, 0.5 * yView, NULL); // начало координат
+				SetViewportOrgEx(hdc, (int)(0.5 * xView), (int)(0.5 * yView), NULL); // начало координат
 
 				// Создание желтого прямоугольника
 				hBrush = CreateSolidBrush(RGB(204, 255, 0));
@@ -476,7 +476,7 @@ void PAR(HDC hdc)
 	double scale = 10.0;
 	POINT pt;
 	GetViewportOrgEx(hdc, &pt);
-	SetViewportOrgEx(hdc, 0.5 * xView, 0.8 * yView, NULL);
+	SetViewportOrgEx(hdc, (int)(0.5 * xView), (int)(0.8 * yView), NULL);
 	MoveToEx(hdc, 0, 0, NULL);
 
 	// Рисуем оси координат
@@ -513,15 +513,15 @@ void PAR(HDC hdc)
 	for (i = (yView / 2 - 120)*2 - 30; i > -10; i -= 50)
 	{
 		Line(hdc, -3, i, 3, i);
-		_stprintf(Buf, L"%4.2f", (float)i);
-		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i);
+		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
 	}
 	// по X
 	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
 	{
 		Line(hdc, i, 3, i, -3);
-		_stprintf(Buf, L"%4.2f", (float)i / scale);
-		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i / scale);
+		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
 	DeleteObject(hPen);
@@ -585,14 +585,14 @@ void GIP(HDC hdc)
 	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
 	{
 		Line(hdc, -3, i, 3, i);
-		_stprintf(Buf, L"%4.2f", (float)i);
-		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i);
+		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
 	}
 	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
 	{
 		Line(hdc, i, 3, i, -3);
-		_stprintf(Buf, L"%4.2f", (float)i);
-		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i);
+		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
 	DeleteObject(hPen);
@@ -636,14 +636,14 @@ void SIN(HDC hdc)
 	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
 	{
 		Line(hdc, -3, i, 3, i);
-		_stprintf(Buf, L"%4.2f", (float)i/(yView / 2 - 120));
-		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i/(yView / 2 - 120));
+		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
 	}
 	for (i = -(xView / 2 - 40)/90*90; i < (xView / 2 - 40)/90*90; i += 90)
 	{
 		Line(hdc, i, 3, i, -3);
-		_stprintf(Buf, L"%4.2f", (float)i/scale/pi*180);
-		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i/scale/pi*180);
+		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
 	DeleteObject(hPen);
@@ -701,14 +701,14 @@ void TAN(HDC hdc)
 	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
 	{
 		Line(hdc, -3, i, 3, i);
-		_stprintf(Buf, L"%4.2f", (float)i / scale);
-		TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i / scale);
+		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
 	}
 	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
 	{
 		Line(hdc, i, 3, i, -3);
-		_stprintf(Buf, L"%4.2f", (float)i / scale / pi * 180);
-		TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
+		_stprintf_s(Buf, L"%4.2f", (float)i / scale / pi * 180);
+		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
 	DeleteObject(hPen);

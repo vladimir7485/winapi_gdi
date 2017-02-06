@@ -7,6 +7,7 @@
 #include <objbase.h>
 #include <stdio.h>
 #include <tchar.h>
+#include "winapi_gdi.h"
 
 /******************************************************************
 *                                                                 *
@@ -49,32 +50,6 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 *  DemoApp                                                        *
 *                                                                 *
 ******************************************************************/
-
-class DemoApp
-{
-public:
-	DemoApp();
-	~DemoApp();
-
-	HRESULT Initialize();
-
-	void RunMessageLoop();
-
-private:
-	HRESULT CreateResources();
-	void DiscardResources();
-
-	static LRESULT CALLBACK WndProc(
-		HWND hWnd,
-		UINT message,
-		WPARAM wParam,
-		LPARAM lParam
-		);
-
-private:
-	HWND m_hwnd;
-
-};
 
 int i, xView, yView;
 double y;
@@ -389,53 +364,6 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 				EndPaint(hwnd, &ps);
 
-				/*InvalidateRect(hwnd, &rect, TRUE);
-				hdc = BeginPaint(hwnd, &ps);
-				SetBkMode(hdc, TRANSPARENT);
-				SetMapMode(hdc, MM_ISOTROPIC); // логические единицы отображаем, как физические
-				SetWindowExtEx(hdc, 500, 500, NULL); // длина осей
-				SetViewportExtEx(hdc, 500, -500, NULL); // определяем область вывода
-				SetViewportOrgEx(hdc, 0.5 * xView, 0.6 * yView, NULL); // начало координат
-
-				// Создание желтого прямоугольника
-				hBrush = CreateSolidBrush(RGB(204, 255, 0));
-				RECT rect;
-				SetRect(&rect, -120, 240, 800, -240);
-				FillRect(hdc, &rect, hBrush);
-
-				// Рисуем оси координат
-				Line(hdc, 0, 220, 0, -220); // ось Y
-				Line(hdc, -100, 0, 780, 0); // ось X
-				MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
-
-				// Создание красного пера
-				hPen = CreatePen(1, 4, RGB(255, 25, 0));
-				SelectObject(hdc, hPen);
-
-				// Синусоида
-				for (i = 0; i < 450; i++)
-				{
-					y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
-					LineTo(hdc, i, (int)y);
-				}
-
-				// Делаем перо снова черным
-				hPen = CreatePen(1, 1, RGB(0, 0, 0));
-				SelectObject(hdc, hPen);
-
-				// Наносим деления
-				for (i = -100; i < 500; i += 100)
-				{
-					Line(hdc, i, 3, i, -3);
-					Line(hdc, -3, i, 3, i);
-					_stprintf(Buf, L"%d", i);
-					TextOut(hdc, i - 5, -5, Buf, _ftcslen(Buf));
-					TextOut(hdc, -5, i, Buf, _ftcslen(Buf));
-				}
-
-
-
-				EndPaint(hwnd, &ps);*/
 				wasHandled = true;
 				result = 0;
 

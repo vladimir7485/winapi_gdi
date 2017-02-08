@@ -1,9 +1,10 @@
-// Windows Header Files:
+/******************************************************************
+*                                                                 *
+*  Headers                                                        *
+*                                                                 *
+******************************************************************/
 #include "winapi_gdi.h"
 #include <CommCtrl.h>
-
-// C RunTime Header Files
-
 
 /******************************************************************
 *                                                                 *
@@ -34,12 +35,6 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)
 #endif
 
-#define pi 3.14
-#define ScreenX GetSystemMetrics(SM_CXSCREEN)
-#define ScreenY GetSystemMetrics(SM_CYSCREEN)
-#define MAPWIDTH 1024
-#define MAPHEIGHT 768
-
 /******************************************************************
 *                                                                 *
 *  DemoApp                                                        *
@@ -51,12 +46,6 @@ int xView, yView;
 // Пусть ItemIndex соответствует 
 // идентификаторам кривых CURVE_ID
 int ItemIndex = 0;
-
-// Процедура рисовании линии
-void PAR(HDC hdc);
-void GIP(HDC hdc);
-void SIN(HDC hdc);
-void TAN(HDC hdc);
 
 /******************************************************************
 *                                                                 *
@@ -377,249 +366,4 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	}
 
 	return result;
-}
-
-void PAR(HDC hdc)
-{
-	/*HPEN hPen = NULL;
-
-	double scale = 10.0;
-	POINT pt;
-	GetViewportOrgEx(hdc, &pt);
-	SetViewportOrgEx(hdc, (int)(0.5 * xView), (int)(0.8 * yView), NULL);
-	MoveToEx(hdc, 0, 0, NULL);
-
-	// Рисуем оси координат
-	Line(hdc, 0, (yView / 2 - 120) * 2 - 20, 0, -20); // ось Y
-	Line(hdc, -(xView / 2 - 40), 0, xView / 2 - 40, 0); // ось X
-	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
-
-							   // Создание красного пера
-	hPen = CreatePen(1, 4, RGB(255, 25, 0));
-	SelectObject(hdc, hPen);
-
-	// Парабола
-	for (i = 0; i < xView / 2 - 40; i++)
-	{
-		y = pow((double)i / scale, 2.0);
-		if (y < (yView / 2 - 120) * 2 - 20)
-			LineTo(hdc, i, (int)y);
-	}
-	MoveToEx(hdc, 0, 0, NULL);
-	for (i = 0; i > -(xView / 2 - 40); i--)
-	{
-		y = pow((double)i / scale, 2.0);
-		if (y < (yView / 2 - 120) * 2 - 20)
-			LineTo(hdc, i, (int)y);
-	}
-
-	// Делаем перо снова черным
-	hPen = CreatePen(1, 1, RGB(0, 0, 0));
-	SelectObject(hdc, hPen);
-
-	// Наносим деления
-	MoveToEx(hdc, 0, 0, NULL);
-	// по Y
-	for (i = (yView / 2 - 120)*2 - 30; i > -10; i -= 50)
-	{
-		Line(hdc, -3, i, 3, i);
-		_stprintf_s(Buf, L"%4.2f", (float)i);
-		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
-	}
-	// по X
-	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
-	{
-		Line(hdc, i, 3, i, -3);
-		_stprintf_s(Buf, L"%4.2f", (float)i / scale);
-		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
-	}
-
-	DeleteObject(hPen);
-
-	SetViewportOrgEx(hdc, pt.x, pt.y, NULL);*/
-}
-
-void GIP(HDC hdc)
-{
-	/*HPEN hPen = NULL;
-
-	double k = 10000.0;
-
-	// Рисуем оси координат
-	Line(hdc, 0, yView / 2 - 120, 0, -(yView / 2 - 120)); // ось Y
-	Line(hdc, -(xView / 2 - 40), 0, xView / 2 - 40, 0); // ось X
-	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
-
-							   // Создание красного пера
-	hPen = CreatePen(1, 4, RGB(255, 25, 0));
-	SelectObject(hdc, hPen);
-
-	bool flag = false;
-
-	// Гипербола
-	for (i = 1; i < xView / 2 - 40; i++)
-	{
-		y = k / i;
-		if (y < (yView / 2 - 120))
-		{
-			if (!flag)
-			{
-				flag = true;
-				MoveToEx(hdc, i, (int)y, NULL);
-			}
-			LineTo(hdc, i, (int)y);
-		}
-	}
-
-	flag = false;
-	for (i = -1; i > -(xView / 2 - 40); i--)
-	{
-		y = k / i;
-		if (y > -(yView / 2 - 120))
-		{
-			if (!flag)
-			{
-				flag = true;
-				MoveToEx(hdc, i, (int)y, NULL);
-			}
-			LineTo(hdc, i, (int)y);
-		}
-	}
-
-	// Делаем перо снова черным
-	hPen = CreatePen(1, 1, RGB(0, 0, 0));
-	SelectObject(hdc, hPen);
-
-	// Наносим деления
-	MoveToEx(hdc, 0, 0, NULL);
-	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
-	{
-		Line(hdc, -3, i, 3, i);
-		_stprintf_s(Buf, L"%4.2f", (float)i);
-		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
-	}
-	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
-	{
-		Line(hdc, i, 3, i, -3);
-		_stprintf_s(Buf, L"%4.2f", (float)i);
-		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
-	}
-
-	DeleteObject(hPen);*/
-}
-
-void SIN(HDC hdc)
-{
-	/*HPEN hPen = NULL;
-
-	double scale = 40.0;
-
-	// Рисуем оси координат
-	Line(hdc, 0, yView/2-120, 0, -(yView/2-120)); // ось Y
-	Line(hdc, -(xView/2-40), 0, xView/2-40, 0); // ось X
-	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
-
-	// Создание красного пера
-	hPen = CreatePen(1, 4, RGB(255, 25, 0));
-	SelectObject(hdc, hPen);
-
-	// Синусоида
-	for (i = 0; i < xView/2-40; i++)
-	{
-		y = sin((double)i / scale) * (yView / 2 - 120);
-		LineTo(hdc, i, (int)y);
-	}
-	MoveToEx(hdc, 0, 0, NULL);
-	for (i = 0; i > -(xView/2-40); i--)
-	{
-		//y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
-		y = sin((double)i / scale) * (yView / 2 - 120);
-		LineTo(hdc, i, (int)y);
-	}
-
-	// Делаем перо снова черным
-	hPen = CreatePen(1, 1, RGB(0, 0, 0));
-	SelectObject(hdc, hPen);
-
-	// Наносим деления
-	MoveToEx(hdc, 0, 0, NULL);
-	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
-	{
-		Line(hdc, -3, i, 3, i);
-		_stprintf_s(Buf, L"%4.2f", (float)i/(yView / 2 - 120));
-		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
-	}
-	for (i = -(xView / 2 - 40)/90*90; i < (xView / 2 - 40)/90*90; i += 90)
-	{
-		Line(hdc, i, 3, i, -3);
-		_stprintf_s(Buf, L"%4.2f", (float)i/scale/pi*180);
-		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
-	}
-
-	DeleteObject(hPen);*/
-}
-
-void TAN(HDC hdc)
-{
-	/*HPEN hPen = NULL;
-
-	double scale = 50.0;
-
-	// Рисуем оси координат
-	Line(hdc, 0, yView / 2 - 120, 0, -(yView / 2 - 120)); // ось Y
-	Line(hdc, -(xView / 2 - 40), 0, xView / 2 - 40, 0); // ось X
-	MoveToEx(hdc, 0, 0, NULL); // перемещаемся в начало координат
-
-							   // Создание красного пера
-	hPen = CreatePen(1, 4, RGB(255, 25, 0));
-	SelectObject(hdc, hPen);
-
-	double y_prev = 0.0;
-	// Тангенс
-	for (i = 0; i < xView / 2 - 40; i++)
-	{
-		y = tan((double)i / scale) * scale;
-		if (y > -(yView / 2 - 120) && y < yView / 2 - 120)
-		{
-			if (y < 0 && y_prev > 0)
-				MoveToEx(hdc, i, (int)y, NULL);
-			LineTo(hdc, i, (int)y);
-			y_prev = y;
-		}
-	}
-
-	y_prev = 0.0;
-	MoveToEx(hdc, 0, 0, NULL);
-	for (i = 0; i > -(xView / 2 - 40); i--)
-	{
-		y = tan((double)i / scale) * scale;
-		if (y > -(yView / 2 - 120) && y < yView / 2 - 120)
-		{
-			if (y > 0 && y_prev < 0)
-				MoveToEx(hdc, i, (int)y, NULL);
-			LineTo(hdc, i, (int)y);
-			y_prev = y;
-		}
-	}
-
-	// Делаем перо снова черным
-	hPen = CreatePen(1, 1, RGB(0, 0, 0));
-	SelectObject(hdc, hPen);
-
-	// Наносим деления
-	MoveToEx(hdc, 0, 0, NULL);
-	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
-	{
-		Line(hdc, -3, i, 3, i);
-		_stprintf_s(Buf, L"%4.2f", (float)i / scale);
-		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
-	}
-	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)
-	{
-		Line(hdc, i, 3, i, -3);
-		_stprintf_s(Buf, L"%4.2f", (float)i / scale / pi * 180);
-		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
-	}
-
-	DeleteObject(hPen);*/
 }

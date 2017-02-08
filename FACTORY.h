@@ -5,6 +5,7 @@
 #include "PARABOLA.h"
 #include "GYPERBOLA.h"
 #include "SINUS.h"
+#include "TANGENT.h"
 
 //class CURVE;
 

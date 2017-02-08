@@ -1,12 +1,12 @@
-#include "SINUS.h"
+#include "TANGENT.h"
 
-void SINUS::plot(HDC hdc, int xView, int yView)
+void TANGENT::plot(HDC hdc, int xView, int yView)
 {
 	HPEN hPen = NULL;
 	int i, y;
 	TCHAR Buf[10];
 
-	double scale = 40.0;
+	double scale = 50.0;
 
 	// Рисуем оси координат
 	Line(hdc, 0, yView / 2 - 120, 0, -(yView / 2 - 120)); // ось Y
@@ -17,18 +17,32 @@ void SINUS::plot(HDC hdc, int xView, int yView)
 	hPen = CreatePen(1, 4, RGB(255, 25, 0));
 	SelectObject(hdc, hPen);
 
-	// Синусоида
+	double y_prev = 0.0;
+	// Тангенс
 	for (i = 0; i < xView / 2 - 40; i++)
 	{
-		y = (int)(sin((double)i / scale) * (yView / 2 - 120));
-		LineTo(hdc, i, (int)y);
+		y = (int)(tan((double)i / scale) * scale);
+		if (y > -(yView / 2 - 120) && y < yView / 2 - 120)
+		{
+			if (y < 0 && y_prev > 0)
+				MoveToEx(hdc, i, (int)y, NULL);
+			LineTo(hdc, i, (int)y);
+			y_prev = y;
+		}
 	}
+
+	y_prev = 0.0;
 	MoveToEx(hdc, 0, 0, NULL);
 	for (i = 0; i > -(xView / 2 - 40); i--)
 	{
-		//y = 180.0 * (exp(-i * 0.01)) * sin(pi * i * (200.0 / 400.0) / 180.0);
-		y = (int)(sin((double)i / scale) * (yView / 2 - 120));
-		LineTo(hdc, i, (int)y);
+		y = (int)(tan((double)i / scale) * scale);
+		if (y > -(yView / 2 - 120) && y < yView / 2 - 120)
+		{
+			if (y > 0 && y_prev < 0)
+				MoveToEx(hdc, i, (int)y, NULL);
+			LineTo(hdc, i, (int)y);
+			y_prev = y;
+		}
 	}
 
 	// Делаем перо снова черным
@@ -40,7 +54,7 @@ void SINUS::plot(HDC hdc, int xView, int yView)
 	for (i = yView / 2 - 120; i > -(yView / 2 - 120); i -= 50)
 	{
 		Line(hdc, -3, i, 3, i);
-		_stprintf_s(Buf, L"%4.2f", (float)i / (yView / 2 - 120));
+		_stprintf_s(Buf, L"%4.2f", (float)i / scale);
 		TextOut(hdc, -5, i, Buf, (int)_ftcslen(Buf));
 	}
 	for (i = -(xView / 2 - 40) / 90 * 90; i < (xView / 2 - 40) / 90 * 90; i += 90)

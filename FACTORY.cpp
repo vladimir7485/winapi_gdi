@@ -17,6 +17,7 @@ CURVE* FACTORY::createCurve(CURVE_ID curve_id)
 		return new SINUS();
 		break;
 	case TANGENT_ID:
+		return new TANGENT();
 		break;
 	default:
 		break;

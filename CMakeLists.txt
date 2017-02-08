@@ -13,7 +13,8 @@ list(APPEND sources
 		./CURVE.cpp
 		./PARABOLA.cpp
 		./GYPERBOLA.cpp
-		./SINUS.cpp)
+		./SINUS.cpp
+		./TANGENT.cpp)
 
 add_executable(winapi_gdi WIN32 ${sources})		# Создает исполняемый файл с именем <name>
 													# из исходника <name>.cpp

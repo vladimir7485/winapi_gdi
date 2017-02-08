@@ -3,6 +3,7 @@
 
 #include "globals.h"
 #include "PARABOLA.h"
+#include "GYPERBOLA.h"
 
 //class CURVE;
 

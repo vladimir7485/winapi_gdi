@@ -29,8 +29,6 @@ SafeRelease(Interface **ppInterfaceToRelease)
 #endif //DEBUG || _DEBUG
 #endif
 
-#pragma warning(disable:4995)
-
 #ifndef HINST_THISCOMPONENT
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 #define HINST_THISCOMPONENT ((HINSTANCE)&__ImageBase)

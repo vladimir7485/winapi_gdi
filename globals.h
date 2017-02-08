@@ -1,6 +1,8 @@
 #ifndef _GLOBALS_
 #define _GLOBALS_
 
+#pragma warning(disable:4995)
+
 #include <Windows.h>
 #include <tchar.h>
 #include <stdio.h>

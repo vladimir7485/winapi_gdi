@@ -1,3 +1,6 @@
+#include "globals.h"
+#include "FACTORY.h"
+
 class DemoApp
 {
 public:
@@ -21,5 +24,5 @@ private:
 
 private:
 	HWND m_hwnd;
-
+	static FACTORY factory;
 };

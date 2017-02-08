@@ -1,13 +1,9 @@
 // Windows Header Files:
-#include <Windows.h>
+#include "winapi_gdi.h"
 #include <CommCtrl.h>
 
 // C RunTime Header Files
-#include <math.h>
-#include <objbase.h>
-#include <stdio.h>
-#include <tchar.h>
-#include "winapi_gdi.h"
+
 
 /******************************************************************
 *                                                                 *
@@ -33,6 +29,7 @@ SafeRelease(Interface **ppInterfaceToRelease)
 #endif //DEBUG || _DEBUG
 #endif
 
+#pragma warning(disable:4995)
 
 #ifndef HINST_THISCOMPONENT
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
@@ -51,19 +48,17 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 *                                                                 *
 ******************************************************************/
 
-int i, xView, yView;
-double y;
-TCHAR Buf[10];
+int xView, yView;
+
+// Пусть ItemIndex соответствует 
+// идентификаторам кривых CURVE_ID
 int ItemIndex = 0;
 
 // Процедура рисовании линии
-BOOL Line(HDC hdc, int x1, int y1, int x2, int y2);
 void PAR(HDC hdc);
 void GIP(HDC hdc);
 void SIN(HDC hdc);
 void TAN(HDC hdc);
-
-
 
 /******************************************************************
 *                                                                 *
@@ -105,6 +100,8 @@ int WINAPI WinMain(
 *                                                                 *
 ******************************************************************/
 
+FACTORY DemoApp::factory;
+
 DemoApp::DemoApp() :
 	m_hwnd(NULL)
 {
@@ -123,13 +120,14 @@ DemoApp::~DemoApp()
 
 /*******************************************************************
 *                                                                  *
-*  Create the application window and the combobox.                 *
+*  Create the application window.                                  *
 *                                                                  *
 *******************************************************************/
 
 HRESULT DemoApp::Initialize()
 {
 	HRESULT hr;
+	//CURVE_FACTORY curve_factory;
 
 	// Register the window class.
 	WNDCLASSEX wcex = { sizeof(WNDCLASSEX) };
@@ -182,6 +180,7 @@ HRESULT DemoApp::Initialize()
 	}
 
 
+
 	// Create the Combobox
 	//
 	// Uses the CreateWindow function to create a child window of 
@@ -198,8 +197,6 @@ HRESULT DemoApp::Initialize()
 		CBS_DROPDOWN | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE,
 		xposCombo, yposCombo, nwidthCombo, nheightCombo, hwndParent, NULL, HINST_THISCOMPONENT,
 		NULL);
-
-
 
 	// load the combobox with item list.  
 	// Send a CB_ADDSTRING message to load each item
@@ -225,7 +222,10 @@ HRESULT DemoApp::Initialize()
 	//  in the selection field  
 	SendMessage(hWndComboBox, CB_SETCURSEL, (WPARAM)ItemIndex, (LPARAM)0);
 
+
+
 	// Create Button
+
 	int xposButton = xposCombo + 210;            // Horizontal position of the window.
 	int yposButton = yposCombo;            // Vertical position of the window.
 	int nwidthButton = 200;          // Width of the window
@@ -234,6 +234,8 @@ HRESULT DemoApp::Initialize()
 		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 		xposButton, yposButton, nwidthButton, nheightButton, hwndParent, NULL, HINST_THISCOMPONENT,
 		NULL);
+
+
 
 	return hr;
 }
@@ -270,6 +272,9 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	PAINTSTRUCT ps; // создаём экземпляр структуры графического вывода
 	HBRUSH hBrush = NULL;
 	LRESULT result = 0;
+	
+	CURVE* curve;
+	//FACTORY* factory;
 
 	if (message == WM_CREATE)
 	{
@@ -342,23 +347,8 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				SetRect(&localRect, -(xView/2-20), yView/2-100, xView/2-20, -(yView/2-100));
 				FillRect(hdc, &localRect, hBrush);
 
-				switch (ItemIndex)
-				{
-				case 0:
-					PAR(hdc);
-					break;
-				case 1:
-					GIP(hdc);
-					break;
-				case 2:
-					SIN(hdc);
-					break;
-				case 3:
-					TAN(hdc);
-					break;
-				default:
-					break;
-				}
+				curve = factory.createCurve(CURVE_ID(ItemIndex));
+				curve->plot(hdc, xView, yView);
 
 				DeleteObject(hBrush);
 
@@ -391,15 +381,9 @@ LRESULT CALLBACK DemoApp::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM
 	return result;
 }
 
-BOOL Line(HDC hdc, int x1, int y1, int x2, int y2)
-{
-	MoveToEx(hdc, x1, y1, NULL); // сделать текущими координаты x1, y1
-	return LineTo(hdc, x2, y2); // нарисовать линию
-}
-
 void PAR(HDC hdc)
 {
-	HPEN hPen = NULL;
+	/*HPEN hPen = NULL;
 
 	double scale = 10.0;
 	POINT pt;
@@ -454,12 +438,12 @@ void PAR(HDC hdc)
 
 	DeleteObject(hPen);
 
-	SetViewportOrgEx(hdc, pt.x, pt.y, NULL);
+	SetViewportOrgEx(hdc, pt.x, pt.y, NULL);*/
 }
 
 void GIP(HDC hdc)
 {
-	HPEN hPen = NULL;
+	/*HPEN hPen = NULL;
 
 	double k = 10000.0;
 
@@ -523,12 +507,12 @@ void GIP(HDC hdc)
 		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
-	DeleteObject(hPen);
+	DeleteObject(hPen);*/
 }
 
 void SIN(HDC hdc)
 {
-	HPEN hPen = NULL;
+	/*HPEN hPen = NULL;
 
 	double scale = 40.0;
 
@@ -574,12 +558,12 @@ void SIN(HDC hdc)
 		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
-	DeleteObject(hPen);
+	DeleteObject(hPen);*/
 }
 
 void TAN(HDC hdc)
 {
-	HPEN hPen = NULL;
+	/*HPEN hPen = NULL;
 
 	double scale = 50.0;
 
@@ -639,5 +623,5 @@ void TAN(HDC hdc)
 		TextOut(hdc, i - 5, -5, Buf, (int)_ftcslen(Buf));
 	}
 
-	DeleteObject(hPen);
+	DeleteObject(hPen);*/
 }

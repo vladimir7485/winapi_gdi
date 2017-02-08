@@ -9,6 +9,8 @@
 #include <math.h>
 #include <objbase.h>
 
+#define pi 3.14
+
 enum CURVE_ID : int {PARABOLA_ID=0, GYPERBOLA_ID, SINUS_ID, TANGENT_ID};
 
 #endif

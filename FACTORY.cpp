@@ -14,6 +14,7 @@ CURVE* FACTORY::createCurve(CURVE_ID curve_id)
 		return new GYPERBOLA();
 		break;
 	case SINUS_ID:
+		return new SINUS();
 		break;
 	case TANGENT_ID:
 		break;

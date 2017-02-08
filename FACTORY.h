@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "PARABOLA.h"
 #include "GYPERBOLA.h"
+#include "SINUS.h"
 
 //class CURVE;
 

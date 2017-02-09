@@ -149,7 +149,7 @@ HRESULT DemoApp::Initialize()
 	m_hwnd = CreateWindow(
 		TEXT("Graphs"),
 		TEXT("Графики"),
-		WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME,
+		WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
 		(ScreenX - MAPWIDTH) / 2,
 		(ScreenY - MAPHEIGHT) / 2,
 		MAPWIDTH,
